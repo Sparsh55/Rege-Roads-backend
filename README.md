@@ -50,71 +50,18 @@ npm start
 Server will start on http://localhost:5002.
 
 📌 API Documentation
-1. 🔐 Login / Register (Get JWT Token)
+#️⃣	API Name	Method	Endpoint	Headers	Request Body / Params	Description
+1️⃣	Login / Register	POST	/api/login	None	wallet (string)
+✅ Example: "0x123..."
+🧪 Use a dummy wallet like 0xTest123 for testing	Logs in a user with wallet address. Creates account if not existing. Returns JWT token.
+2️⃣	Update Game Data	POST	/api/update/game-data	Authorization: Bearer <JWT_TOKEN>	wallet (string)
+track (string)
+score (number)
+raceTime (number, in ms)
+✅ Example: "Monaco", 500, 72000	Updates a user's score, track, and race time. Protected route.
+3️⃣	Fetch Leaderboard	GET	/api/leaderboard?page=1	Authorization: Bearer <JWT_TOKEN>	Query Param: page (number)
+✅ Example: /api/leaderboard?page=1	Fetches current leaderboard (paginated), last week's winners, and logged-in user info.
 
-POST /api/login
-📥 Body
-
-{
-  "wallet": "0x123..."
-}
-If the wallet doesn’t exist, a new user is created.
-
-If it exists, the user is logged in.
-
-🧪 Testing Tip: You can use a random string like 0xTest123 if you don't have a real wallet.
-
-📤 Response
-
-{
-  "user": {
-    "_id": "user_id",
-    "wallet": "0x123...",
-    "score": 0,
-    "track": null,
-    "raceTime": null
-  },
-  "token": "JWT_TOKEN_HERE"
-}
-
-
-2. 🎮 Update Game Data
-
-POST /api/update/game-data
-🧾 Headers
-
-Authorization: Bearer <JWT_TOKEN>
-📥 Body
-
-{
-  "wallet": "0x123...",
-  "track": "Monaco",
-  "score": 500,
-  "raceTime": 72000
-}
-📤 Response
-
-{
-  "message": "Game data updated successfully"
-}
-3. 🏆 Get Leaderboard
-
-GET /api/leaderboard?page=1
-🧾 Headers
-
-Authorization: Bearer <JWT_TOKEN>
-📤 Response
-
-{
-  "currentLeaderboard": [...top10],
-  "lastWeekWinners": [...top10FromLastWeek],
-  "user": {
-    "_id": "user_id",
-    "wallet": "0x123...",
-    "score": 500,
-    ...
-  }
-}
 🏅 Weekly Rewards
 Every Sunday, the top 10 users on the leaderboard will be stored as weekly winners.
 Importent Note:- for default there will be same lask week winner and cureent winner as there is no last week winers nodecron will now keep an eye on the current winner,

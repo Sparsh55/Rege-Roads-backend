@@ -1,9 +1,9 @@
-import './env.js';
+import "./env.js";
+import "./src/utils/nodeCron.js";
 import express from "express";
 import cors from "cors";
-//import routes from "./src/routes";
 import connectDB from "./src/config/db.js";
-import router from './src/routes/index.js';
+import router from "./src/routes/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 5004;

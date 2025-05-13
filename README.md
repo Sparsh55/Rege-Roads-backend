@@ -64,8 +64,6 @@ raceTime (number, in ms)
 
 🏅 Weekly Rewards
 Every Sunday, the top 10 users on the leaderboard will be stored as weekly winners.
-Importent Note:- for default there will be same lask week winner and cureent winner as there is no last week winers nodecron will now keep an eye on the current winner,
-wait for next week to come or manualy set the lask week winner to avoid this.
  
 These winners can be viewed in the /leaderboard API response.
 

@@ -5,6 +5,7 @@ const GameSchema = new mongoose.Schema({
   track: { type: String, required: true },
   score: { type: Number, required: true },
   raceTime: { type: Number },
+  isWin: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now }
 });
 

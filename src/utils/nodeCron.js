@@ -2,6 +2,8 @@ import cron from 'node-cron';
 import User from '../model/User.js';
 import mongoose from 'mongoose';
 import cronConfig from '../config/cronConfig.js';
+import Rewardlog from '../model/Rewardlog.js';
+
 
 // Track execution state
 const executionState = {
@@ -9,28 +11,45 @@ const executionState = {
   isRunning: false
 };
 
-// Helper: Check if two dates are in the same week
-const isSameWeek = (date1, date2) => {
-  const d1 = new Date(date1);
-  const d2 = new Date(date2);
-  const oneDay = 24 * 60 * 60 * 1000;
-  return Math.abs(d1 - d2) < (7 * oneDay) && 
-         d1.getDay() === d2.getDay();
+// Helper: Get start and end of current ISO week
+ export const getWeekRange = () => {
+  const now = new Date();
+  const start = new Date(now);
+  const day = now.getDay();
+  const diff = now.getDate() - day + (day === 0 ? -6 : 1); // adjust when Sunday
+  start.setDate(diff);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(start);
+  end.setDate(start.getDate() + 6);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
 };
 
 // Main distribution logic
 const distributeRewards = async () => {
   if (executionState.isRunning) {
-    console.log('Distribution already in progress');
+    console.log('Reward distribution already in progress');
     return;
   }
 
   executionState.isRunning = true;
-  const today = new Date();
 
   try {
-    console.log(`Starting weekly rewards for ${today.toISOString()}`);
-    
+    const { start, end } = getWeekRange();
+
+    const alreadyDistributed = await Rewardlog.findOne({
+      distributedAt: { $gte: start, $lte: end }
+    });
+
+    if (alreadyDistributed) {
+      console.log('Rewards already distributed this week');
+      return;
+    }
+
+    console.log('Starting weekly reward distribution...');
+
     const session = await mongoose.startSession();
     await session.withTransaction(async () => {
       const topPlayers = await User.find()
@@ -43,17 +62,18 @@ const distributeRewards = async () => {
         player.lastWeekScore = player.score;
         return player.save({ session });
       }));
+
+      //  Save log entry after success
+      await Rewardlog.create([{ distributedAt: new Date() }], { session });
     });
 
-    executionState.lastRun = today;
     console.log('Weekly rewards distributed successfully');
   } catch (err) {
-    console.error('Reward distribution failed:', err);
+    console.error('Error during reward distribution:', err);
   } finally {
     executionState.isRunning = false;
   }
 };
-
 // Schedule the job with dynamic day from config
 const scheduleJob = () => {
   const { rewardDistributionDay, rewardHour, rewardMinute } = cronConfig;
@@ -90,5 +110,5 @@ init();
 
 export default {
   distributeRewards, // Exported for manual triggering
-  scheduleJob
+  scheduleJob,
 };
